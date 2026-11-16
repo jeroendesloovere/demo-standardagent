@@ -14,9 +14,9 @@ export default defineTool({
     topics: z.array(z.string().trim().min(1)).default([]).describe('Topics the influencer writes about.'),
     notes: z.string().optional().describe('Short note. Say why this influencer is useful.'),
   }),
-  execute: async (_state, args) => {
+  execute: async (state, args) => {
     try {
-      const { added, total } = await appendEntry('influencers.json', {
+      const { added, total } = await appendEntry(state, 'influencers', {
         ...args,
         addedAt: new Date().toISOString(),
       });

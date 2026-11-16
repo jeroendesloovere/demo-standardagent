@@ -12,9 +12,9 @@ export default defineTool({
     tags: z.array(z.string().trim().min(1)).default([]).describe('Tags that group the project.'),
     notes: z.string().optional().describe('Short note. Say why the project is interesting.'),
   }),
-  execute: async (_state, args) => {
+  execute: async (state, args) => {
     try {
-      const { added, total } = await appendEntry('projects.json', {
+      const { added, total } = await appendEntry(state, 'projects', {
         ...args,
         addedAt: new Date().toISOString(),
       });

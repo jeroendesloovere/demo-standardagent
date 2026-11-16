@@ -1,31 +1,27 @@
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
+import type { ThreadState } from '@standardagents/spec';
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-
+// Workers have no persistent filesystem. Use the durable user values of the spec.
 const normalize = (url: string) => url.toLowerCase().replace(/\/+$/, '');
 
 type Entry = { url: string } & Record<string, unknown>;
 
 export async function appendEntry(
-  file: string,
+  state: Pick<ThreadState, 'user'>,
+  key: 'influencers' | 'projects',
   entry: Entry,
 ): Promise<{ added: boolean; total: number }> {
-  const target = path.join(DATA_DIR, file);
-  await fs.mkdir(DATA_DIR, { recursive: true });
-
-  let items: Entry[] = [];
-  try {
-    items = JSON.parse(await fs.readFile(target, 'utf8'));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  const user = await state.user();
+  if (!user) {
+    throw new Error('This thread has no user, so durable storage is not available.');
   }
+
+  const items = (await user.getValue<Entry[]>(key)) ?? [];
 
   if (items.some((item) => normalize(item.url) === normalize(entry.url))) {
     return { added: false, total: items.length };
   }
 
-  items.push(entry);
-  await fs.writeFile(target, JSON.stringify(items, null, 2) + '\n', 'utf8');
-  return { added: true, total: items.length };
+  const next = [...items, entry];
+  await user.setValue(key, next);
+  return { added: true, total: next.length };
 }
