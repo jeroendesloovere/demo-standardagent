@@ -30,7 +30,7 @@ agents/
 ## Use
 
 1. Run `npm install`.
-2. Set your OpenRouter key in the Standard Agents runtime.
+2. Set the `OPENROUTER_API_KEY` environment variable (for example in a `.env` file). Do not commit the key. `.env` is in `.gitignore`.
 3. Run `npm run typecheck` to check the types.
 4. Load the `agents/` folder in a Standard Agents builder.
 

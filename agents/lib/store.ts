@@ -5,14 +5,16 @@ const DATA_DIR = path.resolve(process.cwd(), 'data');
 
 const normalize = (url: string) => url.toLowerCase().replace(/\/+$/, '');
 
-export async function appendEntry<T extends { url: string }>(
+type Entry = { url: string } & Record<string, unknown>;
+
+export async function appendEntry(
   file: string,
-  entry: T,
+  entry: Entry,
 ): Promise<{ added: boolean; total: number }> {
   const target = path.join(DATA_DIR, file);
   await fs.mkdir(DATA_DIR, { recursive: true });
 
-  let items: T[] = [];
+  let items: Entry[] = [];
   try {
     items = JSON.parse(await fs.readFile(target, 'utf8'));
   } catch (error) {
