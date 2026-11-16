@@ -8,6 +8,10 @@ Curator is a Standard Agent (spec 0.2.0). It keeps two lists: influencers and in
 |------|-----|------------|
 | `add_influencer` | Add an influencer to the list. | `name`, `platform`, `url`, `topics` (optional), `notes` (optional) |
 | `add_interesting_project` | Add an interesting project to the list. | `name`, `url`, `description`, `tags` (optional), `notes` (optional) |
+| `list_influencers` | Get the saved influencers. | `platform` (optional), `topic` (optional), `limit` (optional) |
+| `list_interesting_projects` | Get the saved interesting projects. | `tag` (optional), `limit` (optional) |
+
+The list tools return JSON text with `total`, `returned` and the entries. The list is empty when nothing is saved. Filters are not case sensitive for `topic` and `tag`. The default `limit` is 50. The maximum is 100.
 
 Each tool checks its input with zod. Each tool saves data as a durable user value (`state.user()`). The Builder runs on Cloudflare Workers. Workers have no persistent filesystem, so the tools do not use files.
 
@@ -25,7 +29,7 @@ agents/
   models/conversational.ts   model (OpenRouter)
   prompts/curator.ts         prompt and tool list
   agents/curator.ts          agent (human on side B)
-  tools/                     the two tools
+  tools/                     the four tools (add and list)
   lib/store.ts               storage (durable user values)
 ```
 

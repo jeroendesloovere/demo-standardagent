@@ -4,17 +4,30 @@ import type { ThreadState } from '@standardagents/spec';
 const normalize = (url: string) => url.toLowerCase().replace(/\/+$/, '');
 
 type Entry = { url: string } & Record<string, unknown>;
+type Key = 'influencers' | 'projects';
 
-export async function appendEntry(
-  state: Pick<ThreadState, 'user'>,
-  key: 'influencers' | 'projects',
-  entry: Entry,
-): Promise<{ added: boolean; total: number }> {
+async function getUser(state: Pick<ThreadState, 'user'>) {
   const user = await state.user();
   if (!user) {
     throw new Error('This thread has no user, so durable storage is not available.');
   }
+  return user;
+}
 
+export async function listEntries<T extends Entry = Entry>(
+  state: Pick<ThreadState, 'user'>,
+  key: Key,
+): Promise<T[]> {
+  const user = await getUser(state);
+  return (await user.getValue<T[]>(key)) ?? [];
+}
+
+export async function appendEntry(
+  state: Pick<ThreadState, 'user'>,
+  key: Key,
+  entry: Entry,
+): Promise<{ added: boolean; total: number }> {
+  const user = await getUser(state);
   const items = (await user.getValue<Entry[]>(key)) ?? [];
 
   if (items.some((item) => normalize(item.url) === normalize(entry.url))) {
